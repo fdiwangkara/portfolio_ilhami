@@ -45,36 +45,36 @@
     }
 
     function flipCard(index) {
-        if (index === $currentIndex) {
-            isFlipped.update(n => !n);
-        }
+        isFlipped.update(n => !n);
     }
 
-    function handleSwipe(event) {
+    function handleSwipeStart(event) {
         let startX = event.touches ? event.touches[0].clientX : event.clientX;
 
-        function move(event) {
+        function handleMove(event) {
             let endX = event.touches ? event.touches[0].clientX : event.clientX;
             let diff = startX - endX;
 
             if (diff > 50) {
                 nextCard();
-                document.removeEventListener("mousemove", move);
-                document.removeEventListener("mouseup", end);
+                removeListeners();
             } else if (diff < -50) {
                 prevCard();
-                document.removeEventListener("mousemove", move);
-                document.removeEventListener("mouseup", end);
+                removeListeners();
             }
         }
 
-        function end() {
-            document.removeEventListener("mousemove", move);
-            document.removeEventListener("mouseup", end);
+        function removeListeners() {
+            document.removeEventListener("mousemove", handleMove);
+            document.removeEventListener("mouseup", removeListeners);
+            document.removeEventListener("touchmove", handleMove);
+            document.removeEventListener("touchend", removeListeners);
         }
 
-        document.addEventListener("mousemove", move);
-        document.addEventListener("mouseup", end);
+        document.addEventListener("mousemove", handleMove);
+        document.addEventListener("mouseup", removeListeners);
+        document.addEventListener("touchmove", handleMove);
+        document.addEventListener("touchend", removeListeners);
     }
 
     selectedFilter.subscribe(() => {
@@ -98,7 +98,7 @@
     {/each}
 </div>
 
-<div class="relative flex justify-center items-center h-[350px] mt-2" on:mousedown={handleSwipe} on:touchstart={handleSwipe}>
+<div class="relative flex justify-center items-center h-[350px] mt-2" on:mousedown={handleSwipeStart} on:touchstart={handleSwipeStart}>
     {#each $cards as card, i}
         <div
                 class="absolute transition-all duration-500"
